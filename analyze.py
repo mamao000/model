@@ -1,5 +1,6 @@
 import csv
 import re
+import json
 from datetime import datetime
 
 work_list=[]
@@ -124,23 +125,45 @@ with open ("perfect_user_data.txt","r",newline="",encoding='utf-8' ,errors='igno
                 i[2] += " " + str(datetime.now().year)
                 date = datetime.strptime(i[2], "%B %d %Y")
             month, day = date.month, date.day
-            print(month, day)
+            #print(month, day)
             temp_zodiac=zodiac_categories[month - (day < zodiac_end_dates[month - 1])]
             zodiac_list.append(temp_zodiac)
         else:
             zodiac_list.append(temp_zodiac)
+        
+        #Work
+        # 讀取 JSON 檔案
+        with open("data.json", "r") as file:
+            data = json.load(file)
+        temp=i[0].lower()
+        # 以 "、、、" 切割文本成多個片段
+        #fragments = temp.split("、、、"," ")
+        fragments = re.split(r"\s+|、、、", temp)
+
+        # 尋找對應的大職業
+        temp_work = ""
+        for fragment in fragments:
+            for occupation, content in data.items():
+                # 將每個小職業轉換為小寫形式
+                lowercase_content = [occupation.lower() for occupation in content["content"]]
+                if fragment in lowercase_content:
+                    print(fragment)
+                    temp_work=occupation
+        work_list.append(temp_work)
+
+        
 
 # 將所有列表合併為一個列表
-rows = zip( edu_list, age_list, state_list, gender_list,zodiac_list)
+rows = zip( edu_list, age_list, state_list, gender_list,zodiac_list,work_list)
 
-print(rows)
+#print(rows)
 
 # 開啟 CSV 檔案，指定編碼為 UTF-8
 with open('output.csv', mode='w', encoding='utf-8', newline='') as f:
     writer = csv.writer(f)
     
     # 寫入表頭
-    writer.writerow([ 'education', 'birth_year', 'state', 'gender','zodiac'])
+    writer.writerow([ 'education', 'birth_year', 'state', 'gender','zodiac','work'])
     
     # 寫入資料
     for row in rows:
